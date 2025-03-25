@@ -13,6 +13,13 @@ const Wrapper = styled(Box)(({ theme }) => ({
   backgroundImage: `radial-gradient(circle at 20% 40%, rgba(74,144,226,0.15), transparent 70%), 
                     radial-gradient(circle at 80% 60%, rgba(255,105,135,0.15), transparent 70%)`, 
   backgroundSize: 'cover',
+  padding: '20px',
+  [theme.breakpoints.down('md')]: {
+    padding: '20px 40px'      // Add left & right padding for medium screens
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '15px'
+  }
 }));
 
 const ContentBox = styled(Box)(({ theme }) => ({
@@ -23,6 +30,14 @@ const ContentBox = styled(Box)(({ theme }) => ({
   boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
   maxWidth: '700px',
   width: '100%',
+  [theme.breakpoints.down('md')]: {
+    padding: '35px',
+    maxWidth: '600px'
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '25px',
+    maxWidth: '90%'
+  }
 }));
 
 const Heading = styled(Typography)(({ theme }) => ({
@@ -31,29 +46,50 @@ const Heading = styled(Typography)(({ theme }) => ({
   fontWeight: 'bold',
   color: '#2c3e50',
   marginBottom: '20px',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '36px'
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '28px'
+  }
 }));
 
 const SocialMediaIcons = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
-  gap: '3px', // Reduced the gap between icons
+  gap: '8px',
   marginTop: '20px',
   '& svg': {
     fontSize: '30px',
     color: '#95a5a6',
-    transition: 'color 0.3s ease',
+    transition: 'color 0.3s ease, transform 0.3s',
     padding: '10px',
     borderRadius: '8px',
+    '&:hover': {
+      transform: 'scale(1.1)'
+    }
   },
   '& a:nth-of-type(1):hover svg': {
-    color: 'blue',
+    color: 'blue'
   },
   '& a:nth-of-type(2):hover svg': {
-    color: '#8e44ad',
+    color: '#8e44ad'
   },
   '& a:nth-of-type(3):hover svg': {
-    color: '#3498db',
+    color: '#3498db'
   },
+  [theme.breakpoints.down('md')]: {
+    '& svg': {
+      fontSize: '26px',
+      padding: '8px'
+    }
+  },
+  [theme.breakpoints.down('sm')]: {
+    '& svg': {
+      fontSize: '22px',
+      padding: '6px'
+    }
+  }
 }));
 
 const ContactUs = () => {
@@ -66,7 +102,10 @@ const ContactUs = () => {
           Feel free to reach out to us for any queries or support!
         </Typography>
 
-        <Typography variant="body1" sx={{ fontSize: '18px', mb: 2, fontFamily: '"Times New Roman", serif' }}>
+        <Typography 
+          variant="body1" 
+          sx={{ fontSize: { xs: '16px', md: '18px' }, mb: 2, fontFamily: '"Times New Roman", serif' }}
+        >
           📧 Email: 
           <MuiLink href="mailto:contact@lostlink.com" sx={{ textDecoration: 'none' }}>
              &nbsp;lostandfound094@gmail.com
