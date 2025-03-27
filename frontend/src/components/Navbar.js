@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Box, Drawer, List, ListItem, ListItemText, ListItemIcon, Button, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import CategoryIcon from '@mui/icons-material/Category';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; 
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -22,8 +23,8 @@ const BlurNavbar = styled(AppBar)(({ theme }) => ({
 
 const NavButton = styled(Button)(({ theme }) => ({
   color: '#fff',
-  borderRadius: '24px',
-  padding: '8px 20px',
+  borderRadius: '16px',
+  padding: '6px 16px',
   textTransform: 'none',
   fontWeight: 'bold',
   transition: 'background 0.3s, transform 0.3s',
@@ -50,12 +51,42 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
     borderRadius: '12px 0 0 12px',
     color: '#2c3e50',
     width: '280px',
-    transition: 'all 0.4s ease-in-out'
+    transition: 'all 0.4s ease-in-out',
+    '& .MuiListItemText-primary': {
+      color: '#2c3e50',
+      fontWeight: 'bold',
+    }
   }
+}));
+
+const CloseButton = styled(Button)(({ theme }) => ({
+  backgroundColor: '#e74c3c',
+  color: '#fff',
+  fontWeight: 'bold',
+  padding: '8px 16px', 
+  borderRadius: '12px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  textTransform: 'none',
+  '&:hover': {
+    backgroundColor: '#c0392b',
+    transform: 'scale(1.05)',  
+  },
+  '& .MuiSvgIcon-root': {
+    marginRight: '8px',  
+  },
 }));
 
 const Navbar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // ✅ Check admin status on component mount
+  useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    setIsAdmin(!!adminToken);
+  }, []);
 
   const toggleDrawer = () => {
     setDrawerOpen(!isDrawerOpen);
@@ -65,7 +96,6 @@ const Navbar = () => {
     <>
       <BlurNavbar position="sticky">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          
           <Typography 
             variant="h5" 
             component={Link} 
@@ -77,7 +107,7 @@ const Navbar = () => {
               '&:hover': { color: '#1abc9c' }
             }}
           >
-            🔗 LostLink
+            🔗LostLink
           </Typography>
 
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
@@ -91,14 +121,24 @@ const Navbar = () => {
               Items
             </NavButton>
 
-            <NavButton component={Link} to="/login" sx={{ backgroundColor: '#81c784', '&:hover': { backgroundColor: '#388e3c' }, mx: 1 }}>
-              <LoginIcon sx={{ mr: 1 }} />
-              Login
-            </NavButton>
+            {/* ✅ Hide Login & Signup buttons when admin is logged in */}
+            {!isAdmin && (
+              <>
+                <NavButton component={Link} to="/login" sx={{ backgroundColor: '#20c999', '&:hover': { backgroundColor: '#00796b' }, mx: 1 }}>
+                  <LoginIcon sx={{ mr: 1 }} />
+                  Login
+                </NavButton>
 
-            <NavButton component={Link} to="/signup" sx={{ backgroundColor: '#66bb6a', '&:hover': { backgroundColor: '#388e3c' }, mx: 1 }}>
-              <PersonAddIcon sx={{ mr: 1 }} />
-              Signup
+                <NavButton component={Link} to="/signup" sx={{ backgroundColor: '#66bb6a', '&:hover': { backgroundColor: '#388e3c' }, mx: 1 }}>
+                  <PersonAddIcon sx={{ mr: 1 }} />
+                  Signup
+                </NavButton>
+              </>
+            )}
+
+            <NavButton component={Link} to="/secure/admin/confidential" sx={{ backgroundColor: '#e74c3c', '&:hover': { backgroundColor: '#c0392b' }, mx: 1 }}>
+              <AdminPanelSettingsIcon sx={{ mr: 1 }} />
+              Admin Panel
             </NavButton>
           </Box>
 
@@ -112,11 +152,12 @@ const Navbar = () => {
 
       <StyledDrawer anchor="right" open={isDrawerOpen} onClose={toggleDrawer}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-          <IconButton onClick={toggleDrawer}>
-            <CloseIcon sx={{ color: '#e74c3c' }} />
-          </IconButton>
+          <CloseButton onClick={toggleDrawer}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+            Close
+          </CloseButton>
         </Box>
-        
+
         <List>
           <ListItem button component={Link} to="/" onClick={toggleDrawer}>
             <ListItemIcon><HomeIcon sx={{ color: '#3498db' }} /></ListItemIcon>
@@ -128,14 +169,24 @@ const Navbar = () => {
             <ListItemText primary="Items" />
           </ListItem>
 
-          <ListItem button component={Link} to="/login" onClick={toggleDrawer}>
-            <ListItemIcon><LoginIcon sx={{ color: '#81c784' }} /></ListItemIcon>
-            <ListItemText primary="Login" />
-          </ListItem>
+          {/* ✅ Hide Login & Signup in the hamburger menu when admin is logged in */}
+          {!isAdmin && (
+            <>
+              <ListItem button component={Link} to="/login" onClick={toggleDrawer}>
+                <ListItemIcon><LoginIcon sx={{ color: '#81c784' }} /></ListItemIcon>
+                <ListItemText primary="Login" />
+              </ListItem>
 
-          <ListItem button component={Link} to="/signup" onClick={toggleDrawer}>
-            <ListItemIcon><PersonAddIcon sx={{ color: '#66bb6a' }} /></ListItemIcon>
-            <ListItemText primary="Signup" />
+              <ListItem button component={Link} to="/signup" onClick={toggleDrawer}>
+                <ListItemIcon><PersonAddIcon sx={{ color: '#66bb6a' }} /></ListItemIcon>
+                <ListItemText primary="Signup" />
+              </ListItem>
+            </>
+          )}
+
+          <ListItem button component={Link} to="/secure/admin/confidential" onClick={toggleDrawer}>
+            <ListItemIcon><AdminPanelSettingsIcon sx={{ color: '#e74c3c' }} /></ListItemIcon>
+            <ListItemText primary="Admin Panel" />
           </ListItem>
         </List>
       </StyledDrawer>
