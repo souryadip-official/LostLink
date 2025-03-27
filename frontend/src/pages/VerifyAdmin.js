@@ -108,7 +108,7 @@ const VerifyAdmin = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/login', {
+      const response = await axios.post('/api/admin/login', {
         adminId,
         password
       });
