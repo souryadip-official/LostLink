@@ -37,7 +37,6 @@ router.post('/signup', async (req, res) => {
 
         await newUser.save();
 
-        // Generate a JWT token for auto-login
         const token = generateToken(newUser._id);
 
         res.json({
