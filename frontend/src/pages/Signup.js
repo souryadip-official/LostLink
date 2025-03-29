@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Box, TextField, Button, Typography, Checkbox, FormControlLabel, IconButton, InputAdornment, Paper, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Visibility, VisibilityOff, CheckCircle, Cancel } from '@mui/icons-material';
 import Loader from '../components/Loader';
-import { toast } from 'react-hot-toast';  // ✅ Import react-hot-toast
+import { toast } from 'react-hot-toast';
 
 const Signup = () => {
   const [loading, setLoading] = useState(true);
+
+  // Form fields
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [year, setYear] = useState('');
+  const [branch, setBranch] = useState('');
+  const [section, setSection] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -23,7 +30,7 @@ const Signup = () => {
   const handleToggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
   const handleAcceptTermsChange = (event) => setAcceptTerms(event.target.checked);
 
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  //const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const validatePassword = (password) => {
     const lengthValid = password.length >= 8;
@@ -40,43 +47,51 @@ const Signup = () => {
     };
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      toast.error('Please fill in all fields');
-      return;
+    if (!fullName || !email || !year || !branch || !section || !rollNumber || !password || !confirmPassword) {
+        toast.error('Please fill in all fields');
+        return;
     }
 
-    if (!validateEmail(email)) {
-      toast.error('Invalid email address');
-      return;
+    if (!/^[A-C]$/.test(section)) {
+        toast.error('Section must be A, B, or C');
+        return;
     }
 
-    const { isValid } = validatePassword(password);
-    if (!isValid) {
-      toast.error('Password does not meet the required criteria');
-      return;
+    if (!/^\d{7}$/.test(rollNumber)) {
+        toast.error('Roll number must be exactly 7 digits');
+        return;
     }
 
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
+    try {
+        const response = await axios.post('http://localhost:5000/api/users/signup', {
+            fullName, 
+            email,
+            year,
+            branch,
+            section,
+            rollNumber,
+            password
+        });
+
+        const { token, user } = response.data;
+
+        toast.success(response.data.message);
+
+        // Store token in localStorage for persistence
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Redirect to homepage or dashboard
+        window.location.href = '/';
+
+    } catch (error) {
+        console.error('Signup Error:', error.response?.data || error.message); 
+        toast.error(error.response?.data?.message || 'Signup failed!');
     }
-
-    if (!acceptTerms) {
-      toast.error('You must accept the terms and conditions');
-      return;
-    }
-
-    toast.success('Signup successful! 🎉');
-
-    setFullName('');
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setAcceptTerms(false);
-  };
+};
 
   const passwordValidation = validatePassword(password);
 
@@ -131,35 +146,26 @@ const Signup = () => {
               </Typography>
 
               <form onSubmit={handleSignup}>
-                <TextField
-                  label="Full Name"
-                  fullWidth
-                  margin="normal"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  InputProps={{
-                    style: {
-                      borderRadius: '24px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.7)'
-                    }
-                  }}
-                />
-
-                <TextField
-                  label="Email Address"
-                  fullWidth
-                  margin="normal"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  InputProps={{
-                    style: {
-                      borderRadius: '24px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.7)'
-                    }
-                  }}
-                />
+                {/* Rounded input fields */}
+                {[
+                  { label: "Full Name", value: fullName, setter: setFullName },
+                  { label: "Email", value: email, setter: setEmail },
+                  { label: "Year", value: year, setter: setYear },
+                  { label: "Branch", value: branch, setter: setBranch },
+                  { label: "Section", value: section, setter: setSection },
+                  { label: "Roll Number", value: rollNumber, setter: setRollNumber }
+                ].map((field, index) => (
+                  <TextField
+                    key={index}
+                    label={field.label}
+                    fullWidth
+                    margin="normal"
+                    value={field.value}
+                    onChange={(e) => field.setter(e.target.value)}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '30px' } }}
+                  />
+                ))}
 
                 <TextField
                   label="Password"
@@ -169,6 +175,7 @@ const Signup = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '30px' } }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -176,11 +183,7 @@ const Signup = () => {
                           {showPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
-                    ),
-                    style: {
-                      borderRadius: '24px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.7)'
-                    }
+                    )
                   }}
                 />
 
@@ -192,6 +195,7 @@ const Signup = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '30px' } }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -199,16 +203,12 @@ const Signup = () => {
                           {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
-                    ),
-                    style: {
-                      borderRadius: '24px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.7)'
-                    }
+                    )
                   }}
                 />
 
                 <List dense>
-                  {[ 
+                  {[
                     { label: 'At least 8 characters', valid: passwordValidation.lengthValid },
                     { label: 'At least 1 uppercase letter', valid: passwordValidation.uppercaseValid },
                     { label: 'At least 1 numeric digit', valid: passwordValidation.numberValid },
@@ -223,14 +223,9 @@ const Signup = () => {
                   ))}
                 </List>
 
-                <FormControlLabel
-                  control={<Checkbox checked={acceptTerms} onChange={handleAcceptTermsChange} />}
-                  label="I accept the terms and conditions"
-                />
+                <FormControlLabel control={<Checkbox checked={acceptTerms} onChange={handleAcceptTermsChange} />} label="I accept the terms and conditions" />
 
-                <Button type="submit" variant="contained" fullWidth sx={{ mt: 3, py: 1.5, borderRadius: '30px' }}>
-                  Sign Up
-                </Button>
+                <Button type="submit" variant="contained" fullWidth sx={{ mt: 3, py: 1.5, borderRadius: '30px' }}>Sign Up</Button>
               </form>
             </Paper>
           </Box>

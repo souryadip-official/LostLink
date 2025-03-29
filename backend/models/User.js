@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  name: {
+  fullName: {
     type: String,
     required: true,
     trim: true
@@ -19,6 +19,27 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['admin', 'user'],
     default: 'user'
+  },
+  year: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 4
+  },
+  branch: {
+    type: String,
+    required: true
+  },
+  section: {
+    type: String,
+    required: true,
+    match: /^[A-C]$/ 
+  },
+  rollNumber: {
+    type: String,
+    required: true,
+    match: /^\d{7}$/,  
+    unique: true
   },
   createdAt: {
     type: Date,

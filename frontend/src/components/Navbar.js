@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Box, Drawer, List, ListItem, ListItemText, ListItemIcon, Button, Typography } from '@mui/material';
 import { styled } from '@mui/system';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import CategoryIcon from '@mui/icons-material/Category';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; 
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import toast from 'react-hot-toast';
 
 const BlurNavbar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -63,7 +65,7 @@ const CloseButton = styled(Button)(({ theme }) => ({
   backgroundColor: '#e74c3c',
   color: '#fff',
   fontWeight: 'bold',
-  padding: '8px 16px', 
+  padding: '8px 16px',
   borderRadius: '12px',
   display: 'flex',
   alignItems: 'center',
@@ -71,38 +73,50 @@ const CloseButton = styled(Button)(({ theme }) => ({
   textTransform: 'none',
   '&:hover': {
     backgroundColor: '#c0392b',
-    transform: 'scale(1.05)',  
+    transform: 'scale(1.05)',
   },
   '& .MuiSvgIcon-root': {
-    marginRight: '8px',  
+    marginRight: '8px',
   },
 }));
 
 const Navbar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
-  // ✅ Check admin status on component mount
   useEffect(() => {
-    const adminToken = localStorage.getItem('adminToken');
-    setIsAdmin(!!adminToken);
+    const token = sessionStorage.getItem('token') || sessionStorage.getItem('adminToken'); 
+    console.log('Token from sessionStorage in useEffect:', token); 
+    setIsLoggedIn(!!token);
+    console.log('isLoggedIn state in useEffect:', !!token); 
   }, []);
 
   const toggleDrawer = () => {
     setDrawerOpen(!isDrawerOpen);
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('token'); 
+    sessionStorage.removeItem('adminToken'); 
+    sessionStorage.removeItem('user'); 
+    toast.success('Logout successful!')
+    setIsLoggedIn(false);
+    console.log('User logged out. isLoggedIn:', false);
+    navigate('/');
+  };
+
   return (
     <>
       <BlurNavbar position="sticky">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography 
-            variant="h5" 
-            component={Link} 
-            to="/" 
-            sx={{ 
-              textDecoration: 'none', 
-              color: '#2c3e50', 
+          <Typography
+            variant="h5"
+            component={Link}
+            to="/"
+            sx={{
+              textDecoration: 'none',
+              color: '#2c3e50',
               fontWeight: 'bold',
               '&:hover': { color: '#1abc9c' }
             }}
@@ -121,8 +135,7 @@ const Navbar = () => {
               Items
             </NavButton>
 
-            {/* ✅ Hide Login & Signup buttons when admin is logged in */}
-            {!isAdmin && (
+            {!isLoggedIn && (
               <>
                 <NavButton component={Link} to="/login" sx={{ backgroundColor: '#20c999', '&:hover': { backgroundColor: '#00796b' }, mx: 1 }}>
                   <LoginIcon sx={{ mr: 1 }} />
@@ -140,6 +153,13 @@ const Navbar = () => {
               <AdminPanelSettingsIcon sx={{ mr: 1 }} />
               Admin Panel
             </NavButton>
+
+            {isLoggedIn && (
+              <NavButton onClick={handleLogout} sx={{ backgroundColor: '#f22e86', '&:hover': { backgroundColor: '#fa0272' }, mx: 1 }}>
+                <LogoutIcon sx={{ mr: 1 }} />
+                Logout
+              </NavButton>
+            )}
           </Box>
 
           <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -169,8 +189,7 @@ const Navbar = () => {
             <ListItemText primary="Items" />
           </ListItem>
 
-          {/* ✅ Hide Login & Signup in the hamburger menu when admin is logged in */}
-          {!isAdmin && (
+          {!isLoggedIn && (
             <>
               <ListItem button component={Link} to="/login" onClick={toggleDrawer}>
                 <ListItemIcon><LoginIcon sx={{ color: '#81c784' }} /></ListItemIcon>
@@ -188,6 +207,13 @@ const Navbar = () => {
             <ListItemIcon><AdminPanelSettingsIcon sx={{ color: '#e74c3c' }} /></ListItemIcon>
             <ListItemText primary="Admin Panel" />
           </ListItem>
+
+          {isLoggedIn && (
+            <ListItem button onClick={handleLogout}>
+              <ListItemIcon><LogoutIcon sx={{ color: '#e74c3c' , cursor: 'pointer'}} /></ListItemIcon>
+              <ListItemText sx={{'&:hover': {cursor: 'pointer'}}} primary="Logout" />
+            </ListItem>
+          )}
         </List>
       </StyledDrawer>
     </>
