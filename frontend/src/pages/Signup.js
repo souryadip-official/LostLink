@@ -33,7 +33,7 @@ const Signup = () => {
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validateYear = (year) => /^[1-4]$/.test(year);
 
-  const validatePassword = (password) => {
+  const validatePassword = (password) => { 
     const lengthValid = password.length >= 8;
     const uppercaseValid = /[A-Z]/.test(password);
     const numberValid = /\d/.test(password);
@@ -66,13 +66,15 @@ const Signup = () => {
       return;
     }
 
+    const passwordValidation = validatePassword(password);
+
     if (!validateYear(year)) {
       toast.error('Year must be between 1 and 4');
       return;
     }
 
-    if(password.length < 8) {
-      toast.error("Invalid password size!");
+    if(!passwordValidation.isValid) {
+      toast.error("Invalid password!");
       return;
     }
 
@@ -124,7 +126,6 @@ const Signup = () => {
 };
 
   const passwordValidation = validatePassword(password);
-
   return (
     <>
       {loading ? (
