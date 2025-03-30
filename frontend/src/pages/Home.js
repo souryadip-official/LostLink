@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Box, Typography, Button, Grid, Paper } from '@mui/material';
 import { styled, keyframes } from '@mui/system';
+import logo from '../logocurved.png'
 
 const fadeInScale = keyframes`
   0% { opacity: 0; transform: scale(0.9); }
@@ -11,16 +12,12 @@ const HeroSection = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #4a90e2, #50e3c2)',
   color: '#fff',
   textAlign: 'center',
-  padding: '120px 20px',
+  padding: '85px 20px',
   borderRadius: '12px',
   boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
   animation: `${fadeInScale} 1.5s ease-in-out`,
-  [theme.breakpoints.down('md')]: {
-    padding: '100px 15px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: '80px 10px'
-  }
+  [theme.breakpoints.down('md')]: { padding: '70px 15px' },
+  [theme.breakpoints.down('sm')]: { padding: '55px 10px' }
 }));
 
 const FeatureCard = styled(Paper)(({ theme }) => ({
@@ -33,15 +30,11 @@ const FeatureCard = styled(Paper)(({ theme }) => ({
     boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
   },
   height: '100%',
-  [theme.breakpoints.down('md')]: {
-    padding: '20px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: '15px'
-  }
+  [theme.breakpoints.down('md')]: { padding: '20px' },
+  [theme.breakpoints.down('sm')]: { padding: '15px' }
 }));
 
-const BackgroundWrapper = styled(Box)(({ theme }) => ({
+const BackgroundWrapper = styled(Box)({
   minHeight: '100vh',
   display: 'flex',
   flexDirection: 'column',
@@ -51,9 +44,9 @@ const BackgroundWrapper = styled(Box)(({ theme }) => ({
                     radial-gradient(circle at 80% 60%, rgba(255,105,135,0.2), transparent 70%)`,
   backgroundSize: 'cover',
   paddingTop: '64px'
-}));
+});
 
-const GradientButton1 = styled(Button)(({ theme }) => ({
+const GradientButton1 = styled(Button)({
   padding: '12px 28px',
   borderRadius: '30px',
   fontFamily: '"Poppins", sans-serif',
@@ -68,14 +61,10 @@ const GradientButton1 = styled(Button)(({ theme }) => ({
     background: 'linear-gradient(135deg, #feb47b, #ff7e5f)',
     transform: 'scale(1.05)',
     boxShadow: '0 12px 30px rgba(0,0,0,0.3)'
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '16px',
-    padding: '10px 20px'
   }
-}));
+});
 
-const GradientButton2 = styled(Button)(({ theme }) => ({
+const GradientButton2 = styled(Button)({
   padding: '12px 28px',
   borderRadius: '30px',
   fontFamily: '"Poppins", sans-serif',
@@ -90,15 +79,18 @@ const GradientButton2 = styled(Button)(({ theme }) => ({
     background: 'linear-gradient(135deg, #2575fc, #6a11cb)',
     transform: 'scale(1.05)',
     boxShadow: '0 12px 30px rgba(0,0,0,0.3)'
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '16px',
-    padding: '10px 20px'
   }
-}));
+});
 
 const Home = () => {
   const [showName, setShowName] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    const adminToken = sessionStorage.getItem('adminToken');
+    setIsLoggedIn(!!token || !!adminToken);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowName(true), 1000);
@@ -118,7 +110,8 @@ const Home = () => {
                 gutterBottom 
                 sx={{ fontFamily: '"Poppins", sans-serif', fontWeight: 'bold', fontSize: { xs: '32px', md: '48px' } }}
               >
-                🔗 <span style={{ background: 'linear-gradient(90deg, #e91e63, #8e24aa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                 <img src={logo} alt="🔗" style={{ height: '50px', marginRight: '10px', marginBottom: '-5px' }} /> 
+                <span style={{ background: 'linear-gradient(90deg, #e91e63, #8e24aa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   LostLink
                 </span>
               </Typography>
@@ -141,24 +134,31 @@ const Home = () => {
             Recover your lost items or report found ones quickly and easily!
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', mt: 2 }}>
-            <GradientButton1 href="/lost">Report Lost Item</GradientButton1>
-            <GradientButton2 href="/found">Report Found Item</GradientButton2>
-          </Box>
+          {isLoggedIn ? (
+            <Box sx={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', mt: 2 }}>
+              <GradientButton1 href="/lost">Report Lost Item</GradientButton1>
+              <GradientButton2 href="/found">Report Found Item</GradientButton2>
+            </Box>
+          ) : (
+            <Typography 
+              variant="body1" 
+              sx={{ fontSize: { xs: '16px', md: '18px' }, mt: 3, color: '#fff', opacity: 0.9 }}
+            >
+              Please <strong>log in</strong> or <strong>sign up</strong> to access our services and help reunite lost items with their owners.
+            </Typography>
+          )}
         </HeroSection>
 
         {/* Features Section */}
         <Box sx={{ my: 6, mb: 10 }}>
-          <Grid container spacing={4} justifyContent="center">
+          <Grid 
+            container 
+            spacing={4} 
+            justifyContent="center" 
+            sx={{ rowGap: { xs: 4, sm: 6 } }} // Adjusted gap between wrapped cards
+          >
 
-            {/* First Card */}
-            <Grid 
-              item 
-              xs={12} 
-              sm={6} 
-              md={4}
-              sx={{ mb: { xs: 4, md: 0 } }}  // Increased gap below on medium/small screens
-            >
+            <Grid item xs={12} sm={6} md={4}>
               <FeatureCard elevation={3}>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
                   📌 Report Lost Items
@@ -169,14 +169,7 @@ const Home = () => {
               </FeatureCard>
             </Grid>
 
-            {/* Second Card */}
-            <Grid 
-              item 
-              xs={12} 
-              sm={6} 
-              md={4}
-              sx={{ mb: { xs: 4, md: 0 } }}  // Increased gap below on medium/small screens
-            >
+            <Grid item xs={12} sm={6} md={4}>
               <FeatureCard elevation={3}>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
                   🔎 Browse Found Items
@@ -187,17 +180,7 @@ const Home = () => {
               </FeatureCard>
             </Grid>
 
-            {/* Third Card centered on medium screens */}
-            <Grid 
-              item 
-              xs={12} 
-              md={4} 
-              sx={{ 
-                display: { xs: 'block', md: 'flex' }, 
-                justifyContent: { md: 'center' },
-                mb: { xs: 4, md: 0 }  // Increased gap below
-              }}
-            >
+            <Grid item xs={12} md={4}>
               <FeatureCard elevation={3}>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
                   🛡️ Admin Access

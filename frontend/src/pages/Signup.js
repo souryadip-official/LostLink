@@ -30,7 +30,8 @@ const Signup = () => {
   const handleToggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
   const handleAcceptTermsChange = (event) => setAcceptTerms(event.target.checked);
 
-  //const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateYear = (year) => /^[1-4]$/.test(year);
 
   const validatePassword = (password) => {
     const lengthValid = password.length >= 8;
@@ -50,9 +51,24 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
 
+    if (!acceptTerms) {
+      toast.error('You must accept the terms and conditions to sign up');
+      return;
+    }
+
     if (!fullName || !email || !year || !branch || !section || !rollNumber || !password || !confirmPassword) {
         toast.error('Please fill in all fields');
         return;
+    }
+
+    if (!validateEmail(email)) {
+      toast.error('Invalid email address!');
+      return;
+    }
+
+    if (!validateYear(year)) {
+      toast.error('Year must be between 1 and 4');
+      return;
     }
 
     if (!/^[A-C]$/.test(section)) {
@@ -77,15 +93,18 @@ const Signup = () => {
         });
 
         const { token, user } = response.data;
-
-        toast.success(response.data.message);
-
-        // Store token in localStorage for persistence
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        toast.success('User registered successfully! 🎉');
+        setTimeout(() => {
+          toast.success("Welcome to LostLink!");
+        }, 500);
+        // Store token in sessionStorage for persistence
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('user', JSON.stringify(user));
 
         // Redirect to homepage or dashboard
-        window.location.href = '/';
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1200); 
 
     } catch (error) {
         console.error('Signup Error:', error.response?.data || error.message); 
