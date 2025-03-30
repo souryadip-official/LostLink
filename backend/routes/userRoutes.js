@@ -18,6 +18,10 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
+        if(password.length < 8) {
+            return res.status(400).json({ message: 'Invalid password size.' });
+        }
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists with this email.' });

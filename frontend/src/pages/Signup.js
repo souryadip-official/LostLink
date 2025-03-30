@@ -71,6 +71,17 @@ const Signup = () => {
       return;
     }
 
+    if(password.length < 8) {
+      toast.error("Invalid password size!");
+      return;
+    }
+
+    if(!(password === confirmPassword)) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+    
+
     if (!/^[A-C]$/.test(section)) {
         toast.error('Section must be A, B, or C');
         return;
