@@ -1,19 +1,13 @@
 const express = require('express');
-const { 
-  getFoundItems, 
-  createFoundItem, 
-  getFoundItemById, 
-  updateFoundItem, 
-  deleteFoundItem 
-} = require('../controllers/foundItemController');
+const { getFoundItems, getFoundItemById, createFoundItem, updateFoundItem, deleteFoundItem } = require('../controllers/foundItemController');
 
 const router = express.Router();
 
-// Routes
-router.get('/', getFoundItems);                   // Get all found items
-router.post('/', createFoundItem);                 // Add a found item
-router.get('/:id', getFoundItemById);              // Get found item by ID
-router.put('/:id', updateFoundItem);               // Update found item by ID
-router.delete('/:id', deleteFoundItem);            // Delete found item by ID
+// Handling form submission and saving data (no image logic)
+router.get('/', getFoundItems);
+router.post('/', createFoundItem);
+router.get('/:id', getFoundItemById);       
+router.put('/:id', updateFoundItem);
+router.delete('/:id', deleteFoundItem);
 
 module.exports = router;

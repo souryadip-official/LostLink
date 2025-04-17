@@ -3,7 +3,7 @@ const FoundItem = require('../models/FoundItem');
 // Get all found items
 const getFoundItems = async (req, res) => {
   try {
-    const items = await FoundItem.find().populate('user', 'name email');
+    const items = await FoundItem.find().sort({ createdAt: -1 });
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch found items' });
@@ -12,51 +12,79 @@ const getFoundItems = async (req, res) => {
 
 // Add a new found item
 const createFoundItem = async (req, res) => {
-  const { itemName, description, location, dateFound, user } = req.body;
-
   try {
-    const newItem = new FoundItem({
+    const { itemName, description, location, date, gmail, phone, department, rollNumber } = req.body;
+    if (!itemName || !gmail || !phone) {
+      return res.status(400).json({ message: 'Item name, Gmail, and phone are required fields' });
+    }
+
+    const foundItem = new FoundItem({
       itemName,
       description,
       location,
-      dateFound,
-      user
+      date,
+      gmail,
+      phone,
+      department,
+      rollNumber
     });
 
-    await newItem.save();
-    res.status(201).json(newItem);
+    await foundItem.save();
+    res.status(201).json({ message: 'Item reported successfully!', foundItem });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create found item' });
+    console.error(error);
+    res.status(500).json({ message: 'Error creating found item', error });
   }
 };
 
-// Get found item by ID
+// Get a found item by ID
 const getFoundItemById = async (req, res) => {
   try {
-    const item = await FoundItem.findById(req.params.id).populate('user', 'name email');
-    if (!item) {
-      return res.status(404).json({ error: 'Found item not found' });
-    }
+    const item = await FoundItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Found item not found' });
     res.status(200).json(item);
   } catch (error) {
     res.status(500).json({ error: 'Failed to get found item' });
   }
 };
 
-// Update found item by ID
+// Update found item
 const updateFoundItem = async (req, res) => {
+  const { id } = req.params;
+  const { itemName, description, location, date, gmail, phone, department, rollNumber } = req.body;
+
   try {
-    const updatedItem = await FoundItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Find the item by ID
+    const item = await FoundItem.findById(id);
+    if (!item) return res.status(404).json({ error: 'Found item not found' });
+
+    // Update fields
+    item.itemName = itemName || item.itemName;
+    item.description = description || item.description;
+    item.location = location || item.location;
+    item.date = date || item.date;
+    item.gmail = gmail || item.gmail;
+    item.phone = phone || item.phone;
+    item.department = department || item.department;
+    item.rollNumber = rollNumber || item.rollNumber;
+
+    // Save updated item
+    const updatedItem = await item.save();
     res.status(200).json(updatedItem);
   } catch (error) {
+    console.error('Update error:', error);
     res.status(500).json({ error: 'Failed to update found item' });
   }
 };
 
-// Delete found item by ID
+// Delete found item
 const deleteFoundItem = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    await FoundItem.findByIdAndDelete(req.params.id);
+    const deletedItem = await FoundItem.findByIdAndDelete(id);
+    if (!deletedItem) return res.status(404).json({ error: 'Found item not found' });
+
     res.status(200).json({ message: 'Found item deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete found item' });
