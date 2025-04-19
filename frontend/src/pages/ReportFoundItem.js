@@ -14,8 +14,8 @@ const ReportFoundItem = () => {
     date: '',
     gmail: JSON.parse(sessionStorage.getItem('user') || '{}')?.email || '',
     phone: '',
-    department: '',
-    rollNumber: ''
+    department: JSON.parse(sessionStorage.getItem('user') || '{}')?.branch || '',
+    rollNumber: JSON.parse(sessionStorage.getItem('user') || '{}')?.rollNumber || '',
   });
 
   const handleChange = (e) => {
@@ -24,17 +24,6 @@ const ReportFoundItem = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    /* Prepare form data
-    const formDataToSend = new FormData();
-    formDataToSend.append('itemName', formData.itemName);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('location', formData.location);
-    formDataToSend.append('date', formData.date);
-    formDataToSend.append('gmail', formData.gmail);
-    formDataToSend.append('phone', formData.phone);
-    formDataToSend.append('department', formData.department);
-    formDataToSend.append('rollNumber', formData.rollNumber); */
-
     try {
         // API request to submit the form data
         const response = await axios.post('/api/found-items', formData, {
@@ -45,10 +34,8 @@ const ReportFoundItem = () => {
         
         console.log('Form Submitted:', response.data);
 
-        // Show success notification using react-hot-toast
         toast.success('Item Reported Successfully!');
 
-        // Reset form data after successful submission
         setFormData({
           itemName: '',
           description: '',
@@ -182,7 +169,9 @@ const ReportFoundItem = () => {
                   required
                   name="department"
                   label="Department"
-                  value={formData.department}
+                  value={JSON.parse(sessionStorage.getItem('user'))?.branch || ''}
+                  InputProps={{ readOnly: true }}
+                  disabled
                   onChange={handleChange}
                   sx={inputStyle}
                 />
@@ -192,7 +181,9 @@ const ReportFoundItem = () => {
                 required
                 name="rollNumber"
                 label="College Roll Number"
-                value={formData.rollNumber}
+                value={JSON.parse(sessionStorage.getItem('user'))?.rollNumber || ''}
+                InputProps={{ readOnly: true }}
+                disabled
                 onChange={handleChange}
                 sx={inputStyle}
               />

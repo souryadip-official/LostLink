@@ -168,7 +168,7 @@ const AdminDashboard = () => {
           textAlign="center"
           sx={{ mb: 2, color: '#333' }}
         >
-          ⚙️Admin Panel
+          Admin Panel 🧑‍💻
         </Typography>
         <List>
           <ListItem disablePadding>

@@ -15,8 +15,8 @@ const ReportLostItem = () => {
     date: '',
     gmail: JSON.parse(sessionStorage.getItem('user') || '{}')?.email || '',
     phone: '',
-    department: '',
-    rollNumber: ''
+    department: JSON.parse(sessionStorage.getItem('user') || '{}')?.branch || '',
+    rollNumber: JSON.parse(sessionStorage.getItem('user') || '{}')?.rollNumber || '',
   });
 
   const handleChange = (e) => {
@@ -172,7 +172,9 @@ const ReportLostItem = () => {
                   required
                   name="department"
                   label="Department"
-                  value={formData.department}
+                  value={JSON.parse(sessionStorage.getItem('user'))?.branch || ''}
+                  InputProps={{ readOnly: true }}
+                  disabled
                   onChange={handleChange}
                   sx={inputStyle}
                 />
@@ -182,7 +184,9 @@ const ReportLostItem = () => {
                 required
                 name="rollNumber"
                 label="College Roll Number"
-                value={formData.rollNumber}
+                value={JSON.parse(sessionStorage.getItem('user'))?.rollNumber || ''}
+                InputProps={{ readOnly: true }}
+                disabled
                 onChange={handleChange}
                 sx={inputStyle}
               />
