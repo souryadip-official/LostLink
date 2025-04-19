@@ -17,7 +17,6 @@ const admins = [
 const JWT_SECRET = process.env.JWT_SECRET || 'superSecretKey'; 
 const TOKEN_EXPIRATION = '24h';  // Updated to 24 hours
 
-// ✅ Admin login route → Generates JWT token with 24-hour validity
 router.post('/login', (req, res) => {
   const { adminId, password } = req.body;
 
@@ -40,7 +39,7 @@ router.post('/login', (req, res) => {
   }
 });
 
-// ✅ Middleware to verify JWT token and session validity
+
 const verifyToken = (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];  // Extract token from header
 
@@ -51,7 +50,6 @@ const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Attach admin info to the request object
     req.admin = decoded;
     next();
   } catch (error) {
@@ -59,7 +57,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// ✅ Protected route → Only accessible with a valid token
+
 router.get('/dashboard', verifyToken, (req, res) => {
   res.status(200).json({
     message: `Welcome Admin ${req.admin.adminId}!`,
@@ -67,13 +65,12 @@ router.get('/dashboard', verifyToken, (req, res) => {
   });
 });
 
-// ✅ Mock stats route → Only accessible with a valid token
 router.get('/stats', verifyToken, (req, res) => {
   const stats = {
-    users: 120,         // Mock user count
-    items: 340,         // Mock total items count
-    lost: 85,           // Mock lost items count
-    found: 255          // Mock found items count
+    users: 120,         
+    items: 340,        
+    lost: 85,           
+    found: 255          
   };
 
   res.status(200).json({

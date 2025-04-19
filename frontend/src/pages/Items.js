@@ -6,25 +6,12 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
+import { InputAdornment } from '@mui/material';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import BeenhereIcon from '@mui/icons-material/Beenhere';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-
-const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  borderRadius: 8,
-  boxShadow: 24,
-  justifyContent: 'center',
-  p: 4,
-  mt: 0.75, 
-};
 
 const claimModalStyle = {
   position: 'absolute',
@@ -155,20 +142,46 @@ const Items = () => {
 
   const handleClaimSubmit = async () => {
     try {
-      await axios.post('/api/claims', { 
-        itemId: claimData._id, 
-        claimedBy: currentUser,
-        description: claimDescription
-      });
-      toast.success('Claim submitted successfully!');
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      console.log("Session user:", user);
+  
+      if (!user) {
+        toast.error("Please login to claim items");
+        return;
+      }
+  
+      const claimDataToSend = {
+        itemId: claimData._id,
+        itemName: claimData.itemName,
+        itemType: claimData.itemType, // dynamic type: 'lost' or 'found'
+        itemDescription: claimData.description,
+        itemLocation: claimData.location,
+        claimedBy: {
+          userId: user._id || user.id,
+          email: user.email,
+          phone: user.phone || '', // fallback to empty if undefined
+          department: user.department || user.branch || '', // handles both keys
+          rollNumber: user.rollNumber
+        },
+        registeredBy: {
+          email: claimData.gmail,
+          phone: claimData.phone,
+          department: claimData.department,
+          rollNumber: claimData.rollNumber
+        },
+        claimDescription: claimDescription,
+        status: 'pending'
+      };
+  
+      await axios.post('/api/claims', claimDataToSend);
+      toast.success('Claim request submitted to admin!');
       setClaimModalOpen(false);
       setClaimDescription('');
     } catch (err) {
       console.error('Error submitting claim:', err);
       toast.error('Failed to submit claim');
     }
-  };
-
+  };  
   const renderCard = (item, type) => {
     const isOwner = item.gmail === currentUser;
 
@@ -224,12 +237,13 @@ const Items = () => {
                 <Button 
                   variant="outlined" 
                   sx={{
-                    borderRadius: 50,
+                    borderRadius: 4,
                     background: 'linear-gradient(135deg, #f4e3b4, #f4d1b5)',
                     color: '#333',
                     '&:hover': { background: 'linear-gradient(135deg, #f4d1b5, #f4e3b4)' },
-                    minWidth: '120px',
+                    minWidth: '80px',
                     padding: '8px 20px',
+                    fontWeight: 'bold'
                   }}
                   startIcon={<SearchIcon />}
                   onClick={() => handleClaimOpen(item)}
@@ -247,9 +261,10 @@ const Items = () => {
                         background: 'linear-gradient(135deg, #d2f8dd, #baf2c6)',
                         color: '#333',
                         '&:hover': { background: 'linear-gradient(135deg, #baf2c6, #d2f8dd)' },
-                        borderRadius: 50,
-                        minWidth: '120px',
+                        borderRadius: 4,
+                        minWidth: '80px',
                         padding: '8px 20px',
+                        fontWeight: 'bold'
                       }}
                       startIcon={<EditIcon />}
                       onClick={() => handleEditOpen(item, type)}
@@ -264,9 +279,10 @@ const Items = () => {
                         background: 'linear-gradient(135deg, #f6cfcf, #f4bcbc)',
                         color: '#333',
                         '&:hover': { background: 'linear-gradient(135deg, #f4bcbc, #f6cfcf)' },
-                        borderRadius: 50,
-                        minWidth: '120px',
+                        borderRadius: 4,
+                        minWidth: '80px',
                         padding: '8px 20px',
+                        fontWeight: 'bold'
                       }}
                       startIcon={<DeleteIcon />}
                       onClick={() => handleDelete(item._id, type)}
@@ -297,24 +313,53 @@ const Items = () => {
 
       {/* Search Bar */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search items by name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ 
-            maxWidth: 600,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 50,
-              backgroundColor: 'background.paper',
-            },
-          }}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
-          }}
-        />
-      </Box>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Search items by name..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        sx={{
+          maxWidth: 600,
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 50,
+            backgroundColor: 'background.paper',
+            pr: '12px', // ensures space on the right for the button
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+            </InputAdornment>
+          ),
+          endAdornment: searchTerm && (
+            <InputAdornment position="end">
+              <Button
+                onClick={() => setSearchTerm('')}
+                size="small"
+                variant="contained"
+                sx={{
+                  borderRadius: '20px',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  px: 2,
+                  mr: 1, // slight left shift
+                  background: 'linear-gradient(45deg, #f44336 30%, #e57373 90%)',
+                  color: 'white',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #d32f2f 30%, #ef5350 90%)',
+                  },
+                }}
+              >
+                Reset
+              </Button>
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Box>
 
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
@@ -338,80 +383,60 @@ const Items = () => {
           {filterItems(foundItems).map(item => renderCard(item, 'found'))}
         </Grid>
       )}
-
       {/* Edit Modal */}
       <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
-        <Box sx={modalStyle}>
-          <Typography variant="h5" fontWeight="bold">Edit {editType === 'lost' ? 'Lost' : 'Found'} Item</Typography>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: {
+              xs: '90%',   // mobile
+              sm: '80%',   // small tablets
+              md: '60%',   // medium devices
+              lg: '40%',   // desktops
+            },
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            bgcolor: 'background.paper',
+            borderRadius: 4,
+            boxShadow: 24,
+            p: { xs: 2, sm: 3 }, // padding adjusts with screen
+          }}
+        >
+          <Typography variant="h5" fontWeight="bold">
+            Edit {editType === 'lost' ? 'Lost' : 'Found'} Item
+          </Typography>
+
           <Box mt={2}>
-            <TextField
-              fullWidth
-              name="itemName"
-              label="Item Name"
-              variant="outlined"
-              value={editData.itemName || ''}
-              onChange={handleEditChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              name="description"
-              label="Description"
-              variant="outlined"
-              value={editData.description || ''}
-              onChange={handleEditChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              name="location"
-              label="Location"
-              variant="outlined"
-              value={editData.location || ''}
-              onChange={handleEditChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              name="phone"
-              label="Phone"
-              variant="outlined"
-              value={editData.phone || ''}
-              onChange={handleEditChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              name="gmail"
-              label="Gmail"
-              variant="outlined"
-              value={editData.gmail || ''}
-              disabled
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              name="department"
-              label="Department"
-              variant="outlined"
-              value={editData.department || ''}
-              onChange={handleEditChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              name="rollNumber"
-              label="Roll Number"
-              variant="outlined"
-              value={editData.rollNumber || ''}
-              onChange={handleEditChange}
-              sx={{ mb: 2 }}
-            />
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={handleEditSubmit} 
-              sx={{ 
+            {[
+              { name: 'itemName', label: 'Item Name' },
+              { name: 'description', label: 'Description' },
+              { name: 'location', label: 'Location' },
+              { name: 'phone', label: 'Phone' },
+              { name: 'gmail', label: 'Gmail', disabled: true },
+              { name: 'department', label: 'Department' },
+              { name: 'rollNumber', label: 'Roll Number' },
+            ].map(({ name, label, disabled }) => (
+              <TextField
+                key={name}
+                fullWidth
+                name={name}
+                label={label}
+                variant="outlined"
+                value={editData[name] || ''}
+                onChange={handleEditChange}
+                disabled={disabled}
+                sx={{ mb: 2 }}
+              />
+            ))}
+
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleEditSubmit}
+              sx={{
                 mt: 2,
                 display: 'flex',
                 justifyContent: 'center',
@@ -427,58 +452,108 @@ const Items = () => {
 
       {/* Claim Modal */}
       <Modal open={claimModalOpen} onClose={() => setClaimModalOpen(false)}>
-        <Box sx={claimModalStyle}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Claim Found Item
-          </Typography>
-          <Typography variant="body1" color="text.secondary" mb={2}>
-            Are you sure you want to claim <strong>{claimData.itemName}</strong>?
-          </Typography>
-          
-          {/*<TextField
-            fullWidth
-            multiline
-            rows={4}
-            variant="outlined"
-            label="Proof of ownership/matching details"
-            value={claimDescription}
-            onChange={(e) => setClaimDescription(e.target.value)}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              },
-            }}
-          />*/}
-          
+      <Box
+        sx={{
+          ...claimModalStyle,
+          width: {
+            xs: '85%', // small devices
+            sm: '75%',
+            md: '50%',
+            lg: '40%',
+            xl: '35%',
+          },
+          p: {
+            xs: 3,
+            sm: 4,
+            md: 5,
+          },
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          borderRadius: 4,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          Claim Found Item
+        </Typography>
+
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          mb={2}
+          sx={{
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+            wordWrap: 'break-word',
+          }}
+        >
+          Are you sure you want to claim <strong>{claimData.itemName}</strong>?
+        </Typography>
+
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          variant="outlined"
+          label="Proof of ownership/matching details"
+          value={claimDescription}
+          onChange={(e) => setClaimDescription(e.target.value)}
+          sx={{
+            mb: 3,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+            },
+          }}
+          required
+        />
+
+        {/* Responsive and Updated Form */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            justifyContent: 'flex-end',
+          }}
+        >
           <Button
             variant="contained"
             color="success"
             sx={{
               background: 'linear-gradient(135deg, #5cbe4b, #3b9f3f)',
               borderRadius: '50px',
-              '&:hover': { background: 'linear-gradient(135deg, #3b9f3f, #5cbe4b)' },
+              px: 3,
+              '&:hover': {
+                background: 'linear-gradient(135deg, #3b9f3f, #5cbe4b)',
+              },
             }}
             onClick={handleClaimSubmit}
+            disabled={!claimDescription}
           >
-            Confirm Claim
+            Submit Claim Request
           </Button>
+
           <Button
             variant="outlined"
             color="error"
             sx={{
               borderRadius: '50px',
               border: '2px solid #f44336',
-              '&:hover': { borderColor: '#d32f2f' },
+              px: 3,
+              '&:hover': {
+                borderColor: '#d32f2f',
+              },
             }}
             onClick={() => {
               setClaimModalOpen(false);
-              setClaimDescription('');
+              setClaimDescription(''); // Reset the description on cancel
             }}
           >
             Cancel
           </Button>
         </Box>
-      </Modal>
+      </Box>
+    </Modal>
     </Container>
   );
 };
