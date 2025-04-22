@@ -12,6 +12,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import ManageItems from './pages/ManageItems';
 import PendingCases from './pages/PendingCases';
 import ResolvedCases from './pages/ResolvedCases';
+import ReportLostItem from './pages/ReportLostItem';
+import ReportFoundItem from './pages/ReportFoundItem';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Loader from './components/Loader';
@@ -67,6 +69,8 @@ const AppContent = () => {
               <Route path="/signup" element={<Signup />} />
               <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/secure/admin/confidential" element={<VerifyAdmin />} />
+              <Route path="/report-lost" element={<ReportLostItem />} />
+              <Route path="/report-found" element={<ReportFoundItem />} />
               <Route 
                 path="/admin/dashboard" 
                 element={isAdminLoggedIn() ? <AdminDashboard /> : <Navigate to="/secure/admin/confidential" />} 

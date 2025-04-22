@@ -136,8 +136,8 @@ const Home = () => {
 
           {isLoggedIn ? (
             <Box sx={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', mt: 2 }}>
-              <GradientButton1 href="/lost">Report Lost Item</GradientButton1>
-              <GradientButton2 href="/found">Report Found Item</GradientButton2>
+              <GradientButton1 href="/report-lost">Report Lost Item</GradientButton1>
+              <GradientButton2 href="/report-found">Report Found Item</GradientButton2>
             </Box>
           ) : (
             <Typography 
