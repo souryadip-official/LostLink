@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); 
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
@@ -9,7 +9,7 @@ dotenv.config();
 const adminsFilePath = path.join(__dirname, '../config/admins.json');
 const admins = JSON.parse(fs.readFileSync(adminsFilePath, 'utf-8'));
 
-const TOKEN_EXPIRATION = '24h';  // Set token expiration to 24 hours
+const TOKEN_EXPIRATION = '24h';  
 
 const loginAdmin = async (req, res) => {
   const { adminId, password } = req.body;
