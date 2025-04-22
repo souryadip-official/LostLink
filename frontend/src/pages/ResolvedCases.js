@@ -1,19 +1,21 @@
-import React, { useEffect } from 'react';
-import { Typography, Button, Card, CardContent, Container, IconButton, Divider } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Typography, Button, Card, CardContent, Container, Divider, CircularProgress, Box, Grid, Modal } from '@mui/material';
 import { styled } from '@mui/system';
 import { useNavigate } from 'react-router-dom';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { CheckCircleOutline } from '@mui/icons-material';
 
+// Styled components
 const GradientContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, rgba(250, 255, 200, 0.6), rgba(220, 255, 220, 0.6))',
+  background: 'transparent',
   color: '#333',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
-  paddingTop: '100px',
+  justifyContent: 'flex-start', // Align content to top
+  paddingTop: '20px',
   paddingBottom: '50px',
 }));
 
@@ -29,12 +31,12 @@ const CardContainer = styled(Card)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-5px)',
     boxShadow: '0 12px 30px rgba(0, 0, 0, 0.2)',
-  }
+  },
 }));
 
-const StyledButton = styled(Button)(({ theme }) => ({
-  margin: '20px',
-  background: 'linear-gradient(135deg, #2196F3, #21CBF3)',
+const StyledButton = styled(Button)(() => ({
+  marginTop: '20px',
+  background: 'linear-gradient(135deg, #4CAF50, #8BC34A)',
   color: '#fff',
   padding: '12px 30px',
   borderRadius: '30px',
@@ -42,11 +44,22 @@ const StyledButton = styled(Button)(({ theme }) => ({
   transition: 'transform 0.3s',
   '&:hover': {
     transform: 'scale(1.05)',
-  }
+  },
+  width: '100%', // Make sure buttons take the full width
+}));
+
+const FullDetailsModal = styled(Modal)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 const ResolvedCases = () => {
   const navigate = useNavigate();
+  const [resolvedCases, setResolvedCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [selectedClaim, setSelectedClaim] = useState(null);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -57,36 +70,152 @@ const ResolvedCases = () => {
       }
     };
 
+    const fetchResolvedCases = async () => {
+      try {
+        const res = await axios.get('/api/claims/resolved');
+        console.log('Resolved cases data:', res.data);
+        if (Array.isArray(res.data)) {
+          setResolvedCases(res.data);
+        } else {
+          toast.error('Resolved cases data is not in the expected format');
+        }
+      } catch (err) {
+        console.error('Error fetching resolved cases:', err);
+        toast.error('Failed to fetch resolved cases');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     window.addEventListener('resize', checkScreenSize);
     checkScreenSize();
+    fetchResolvedCases();
 
     return () => window.removeEventListener('resize', checkScreenSize);
   }, [navigate]);
 
+  const handleOpenDetails = (claim) => {
+    setSelectedClaim(claim);
+    setOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setOpen(false);
+    setSelectedClaim(null);
+  };
+
   return (
     <GradientContainer>
-      <IconButton onClick={() => navigate('/admin/dashboard')} sx={{ alignSelf: 'flex-start', color: '#555' }}>
-        <ArrowBackIcon fontSize="large" />
-      </IconButton>
-
-      <Typography variant="h3" gutterBottom sx={{ marginBottom: '40px' }}>
-        ✅ Resolved Cases
+      {/* Resolved Cases Heading */}
+      <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#1e88e5', marginBottom: '30px' }}>
+        <CheckCircleOutline sx={{ marginRight: '10px', color: '#1e88e5' }} fontSize="large" />
+        Resolved Cases
       </Typography>
 
-      {[1, 2, 3].map((caseId) => (
-        <CardContainer key={caseId}>
-          <CardContent>
-            <Typography variant="h5">Case {caseId}</Typography>
-            <Typography variant="body1">Details about the resolved case...</Typography>
-            <Divider sx={{ my: 2 }} />
-            <Button variant="contained" color="success">View</Button>
-          </CardContent>
-        </CardContainer>
-      ))}
+      {loading ? (
+        <Box sx={{ mt: 5 }}>
+          <CircularProgress sx={{ color: '#fff' }} />
+        </Box>
+      ) : (
+        <>
+          {resolvedCases.length === 0 ? (
+            <Typography variant="h6" sx={{ mt: 3, textAlign: 'center', color: '#fff' }}>
+              No resolved cases found.
+            </Typography>
+          ) : (
+            <Grid container spacing={4} justifyContent="center">
+              {resolvedCases.map((request) => (
+                <Grid item key={request._id}>
+                  <CardContainer>
+                    <CardContent>
+                      <Typography variant="h5" gutterBottom sx={{ color: '#1f1f1f' }}>
+                        {request.itemName} - {request.itemType}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ color: '#3c3c3c' }}>
+                        Claimed by: {request.claimedBy ? request.claimedBy.email : 'N/A'} ({request.claimedBy ? request.claimedBy.rollNumber : 'N/A'})
+                      </Typography>
+                      <Typography variant="body2" gutterBottom sx={{ color: '#5f5f5f' }}>
+                        Description: {request.claimDescription}
+                      </Typography>
+                      <Divider sx={{ my: 2, borderColor: '#ccc' }} />
+                      <Box display="flex" justifyContent="space-between">
+                        <Button
+                          variant="outlined"
+                          color="info"
+                          sx={{
+                            borderRadius: '20px',
+                            padding: '8px 16px',
+                            fontSize: '0.9rem',
+                            textTransform: 'capitalize',
+                            transition: '0.3s',
+                            '&:hover': {
+                              backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                            },
+                          }}
+                          onClick={() => handleOpenDetails(request)}
+                        >
+                          View Full Details
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </CardContainer>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </>
+      )}
 
-      <StyledButton onClick={() => navigate('/admin/dashboard')}>
-        Back to Dashboard
-      </StyledButton>
+      {/* Modal for full details */}
+      <FullDetailsModal open={open} onClose={handleCloseDetails} aria-labelledby="full-details-modal">
+        <Box sx={{
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          borderRadius: '16px',
+          padding: '20px',
+          width: '450px',  // Reduced size
+          boxShadow: 24,
+          overflowY: 'auto',
+          backdropFilter: 'blur(5px)', // Glassmorphism for modal
+          border: '1px solid rgba(0, 0, 0, 0.1)',  // Subtle border
+          lineHeight: 1.4, // Reduced line-height
+        }}>
+          {selectedClaim && (
+            <>
+              <Typography variant="h5" sx={{
+                marginBottom: '15px', fontWeight: '600', color: '#1e88e5', display: 'flex', alignItems: 'center'
+              }}>
+                <CheckCircleOutline sx={{ marginRight: '10px', color: '#1e88e5' }} />
+                Claim Details
+              </Typography>
+              <Typography variant="body1" sx={{ marginBottom: '20px', color: '#444' }}>
+                <strong>Claim ID:</strong> {selectedClaim._id}
+              </Typography>
+              <Typography variant="body1" sx={{ marginBottom: '20px', color: '#444' }}>
+                <strong>Claimed by:</strong> {selectedClaim.claimedBy ? selectedClaim.claimedBy.email : 'N/A'}
+              </Typography>
+              <Typography variant="body1" sx={{ marginBottom: '20px', color: '#444' }}>
+                <strong>Claim Description:</strong> {selectedClaim.claimDescription}
+              </Typography>
+              <Typography variant="body1" sx={{ marginBottom: '20px', color: '#444' }}>
+                <strong>Item Registered by:</strong> {selectedClaim.registeredBy ? selectedClaim.registeredBy.email : 'N/A'}
+              </Typography>
+              <Typography variant="body1" sx={{ marginBottom: '20px', color: '#444' }}>
+                <strong>Claim Date:</strong> {new Date(selectedClaim.createdAt).toLocaleString()}
+              </Typography>
+              <StyledButton onClick={handleCloseDetails} sx={{ display: 'block', margin: '0 auto' }}>
+                Close
+              </StyledButton>
+            </>
+          )}
+        </Box>
+      </FullDetailsModal>
+
+      {/* Back to Dashboard Button in the Footer */}
+      <Box sx={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
+        <StyledButton onClick={() => navigate('/admin/dashboard')}>
+          Back to Dashboard
+        </StyledButton>
+      </Box>
     </GradientContainer>
   );
 };
